@@ -3,7 +3,7 @@ name: Web Crawler Monitor
 on:
   schedule:
     # 毎日 午前9時（JST）に実行 ※UTC表記なので0時=JST9時
-    - cron: '0 0,3,6,9,12,15 * * *'
+    - cron: '0 0 * * *'
   workflow_dispatch:
     # GitHubの画面から手動実行もできる
 
@@ -19,13 +19,13 @@ jobs:
     steps:
       # 1. リポジトリをチェックアウト
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       # 2. Pythonをセットアップ
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -35,6 +35,10 @@ jobs:
 
       # 4. クローラー実行
       - name: Run crawler
+        env:
+          GMAIL_USER:         ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          PAGES_URL:          https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
         run: python crawler.py
 
       # 5. レポートをGitHub Pages用にindex.htmlとしてコピー
