@@ -3,7 +3,7 @@ name: Web Crawler Monitor
 on:
   schedule:
     # 毎日 午前9時（JST）に実行 ※UTC表記なので0時=JST9時
-    - cron: '0 0 * * *'
+    - cron: '0 0,3,6,9,12,15 * * *'
   workflow_dispatch:
     # GitHubの画面から手動実行もできる
 
