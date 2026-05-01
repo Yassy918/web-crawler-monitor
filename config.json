@@ -20,5 +20,11 @@
   },
   "snapshot_dir": "snapshots",
   "report_dir": "reports",
-  "auto_open_browser": true
+  "auto_open_browser": true,
+  "mail": {
+    "_comment": "通知先メールアドレス（複数設定可）",
+    "to": [
+      "daipapa0427@gmail.com"
+    ]
+  }
 }
