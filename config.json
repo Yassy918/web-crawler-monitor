@@ -1,0 +1,24 @@
+{
+  "_comment": "WebCrawler 設定ファイル",
+  "start_url": "https://harada-sake.jp/j%20wine.html",
+  "max_depth": 2,
+  "delay_seconds": 1.5,
+  "exclude_patterns": [
+    "\\.pdf$",
+    "\\.zip$",
+    "\\.jpg$",
+    "\\.png$",
+    "\\.gif$",
+    "/login",
+    "/logout",
+    "/cart",
+    "\\?.*page=",
+    "https://harada\\-sake\\.jp/niki\\ hills\\.htm"
+  ],
+  "headers": {
+    "User-Agent": "Mozilla/5.0 (compatible; WebCrawler-Monitor/1.0)"
+  },
+  "snapshot_dir": "snapshots",
+  "report_dir": "reports",
+  "auto_open_browser": true
+}
