@@ -1,0 +1,61 @@
+name: Web Crawler Monitor
+
+on:
+  schedule:
+    # 毎日 午前9時（JST）に実行 ※UTC表記なので0時=JST9時
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # GitHubの画面から手動実行もできる
+
+permissions:
+  contents: write  # スナップショット・レポートをコミットするために必要
+  pages: write
+  id-token: write
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. リポジトリをチェックアウト
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. Pythonをセットアップ
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 3. ライブラリをインストール
+      - name: Install dependencies
+        run: pip install requests beautifulsoup4 jinja2
+
+      # 4. クローラー実行
+      - name: Run crawler
+        run: python crawler.py
+
+      # 5. レポートをGitHub Pages用にindex.htmlとしてコピー
+      - name: Prepare Pages report
+        run: |
+          mkdir -p docs
+          # 最新レポートを docs/index.html としてコピー
+          LATEST=$(ls -t reports/report_*.html 2>/dev/null | head -1)
+          if [ -n "$LATEST" ]; then
+            cp "$LATEST" docs/index.html
+            echo "最新レポート: $LATEST → docs/index.html"
+          else
+            echo "<html><body><p>レポートがまだありません</p></body></html>" > docs/index.html
+          fi
+
+      # 6. スナップショット・レポートをリポジトリにコミット
+      - name: Commit snapshots and reports
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add snapshots/ docs/ reports/ config.json
+          # 変更がある場合だけコミット
+          git diff --cached --quiet || git commit -m "🔍 crawl: $(date +'%Y-%m-%d %H:%M') JST"
+          git push
