@@ -62,4 +62,5 @@ jobs:
           git add snapshots/ docs/ reports/ config.json
           # 変更がある場合だけコミット
           git diff --cached --quiet || git commit -m "🔍 crawl: $(date +'%Y-%m-%d %H:%M') JST"
+          git pull --rebase origin main
           git push
