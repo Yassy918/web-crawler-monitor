@@ -5,57 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>WebCrawler レポート一覧</title>
 <style>
-  body { font-family: "Segoe UI", sans-serif; background: #f8fafc; color: #1e293b; padding: 24px; }
-  h1 { font-size: 1.4rem; margin-bottom: 4px; }
-  .meta { color: #64748b; font-size: 0.875rem; margin-bottom: 24px; }
-  table { border-collapse: collapse; width: 100%; max-width: 800px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-  th { background: #f1f5f9; padding: 12px 16px; text-align: left; font-size: 0.8rem; color: #64748b; text-transform: uppercase; }
-  td { padding: 12px 16px; border-top: 1px solid #e2e8f0; font-size: 0.9rem; }
-  tr:hover td { background: #f8fafc; }
-  a { color: #2563eb; text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .badge-new { background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:4px; font-size:0.75rem; }
+  body { font-family:"Segoe UI",sans-serif; background:#f8fafc; color:#1e293b; padding:24px; }
+  h1 { font-size:1.4rem; margin-bottom:4px; }
+  .meta { color:#64748b; font-size:0.875rem; margin-bottom:24px; }
+  table { border-collapse:collapse; width:100%; max-width:900px; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+  th { background:#f1f5f9; padding:12px 16px; text-align:left; font-size:0.8rem; color:#64748b; text-transform:uppercase; }
+  td { padding:12px 16px; border-top:1px solid #e2e8f0; font-size:0.9rem; vertical-align:middle; }
+  tr:hover td { background:#f8fafc; }
+  a { color:#2563eb; text-decoration:none; font-weight:600; }
+  a:hover { text-decoration:underline; }
+  .badge { display:inline-block; padding:3px 10px; border-radius:9999px; font-size:0.78rem; font-weight:600; margin-right:4px; }
+  .badge.ok      { background:#dcfce7; color:#166534; }
+  .badge.changed { background:#fef9c3; color:#854d0e; }
+  .badge.new     { background:#dbeafe; color:#1e40af; }
+  .badge.error404{ background:#ffedd5; color:#9a3412; }
+  .badge.error   { background:#fee2e2; color:#991b1b; }
 </style>
 </head>
 <body>
 <h1>🔍 WebCrawler レポート一覧</h1>
-<p class="meta">最新のレポートが上に表示されます</p>
+<p class="meta">最新の実行が上に表示されます（1週間分保持）</p>
 <table>
-<thead><tr><th>実行日時</th><th>レポート</th></tr></thead>
+<thead><tr><th>実行日時</th><th>サマリー</th><th>詳細</th></tr></thead>
 <tbody>
-    <tr><td>2026年05月07日 02:11</td><td><a href="report_20260507_021145.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月06日 16:53</td><td><a href="report_20260506_165349.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月06日 14:36</td><td><a href="report_20260506_143651.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月06日 11:16</td><td><a href="report_20260506_111630.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月06日 03:53</td><td><a href="report_20260506_035327.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月05日 16:51</td><td><a href="report_20260505_165153.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月05日 10:56</td><td><a href="report_20260505_105627.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月05日 08:25</td><td><a href="report_20260505_082537.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月05日 03:38</td><td><a href="report_20260505_033825.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月04日 16:58</td><td><a href="report_20260504_165847.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月04日 14:25</td><td><a href="report_20260504_142502.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月04日 11:14</td><td><a href="report_20260504_111459.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月04日 08:43</td><td><a href="report_20260504_084350.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月04日 03:56</td><td><a href="report_20260504_035642.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月03日 16:00</td><td><a href="report_20260503_160029.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月03日 13:31</td><td><a href="report_20260503_133155.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月03日 10:16</td><td><a href="report_20260503_101642.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月03日 08:14</td><td><a href="report_20260503_081417.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月03日 03:58</td><td><a href="report_20260503_035840.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月02日 16:00</td><td><a href="report_20260502_160003.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月02日 13:31</td><td><a href="report_20260502_133104.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月02日 10:09</td><td><a href="report_20260502_100910.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月02日 07:58</td><td><a href="report_20260502_075837.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月02日 03:38</td><td><a href="report_20260502_033826.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月01日 16:07</td><td><a href="report_20260501_160702.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月01日 13:47</td><td><a href="report_20260501_134722.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月01日 09:27</td><td><a href="report_20260501_092745.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月01日 08:26</td><td><a href="report_20260501_082650.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月01日 07:33</td><td><a href="report_20260501_073305.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月01日 07:06</td><td><a href="report_20260501_070640.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月01日 05:53</td><td><a href="report_20260501_055302.html">レポートを開く</a></td></tr>
-    <tr><td>2026年05月01日 05:39</td><td><a href="report_20260501_053919.html">レポートを開く</a></td></tr>
-</tbody>
+    <tr>
+      <td>2026年05月07日 02:33</td>
+      <td><span class="badge ok">✅ 変更なし</span></td>
+      <td><a href="report_20260507_023353.html">レポートを開く →</a></td>
+    </tr></tbody>
 </table>
 </body>
 </html>
