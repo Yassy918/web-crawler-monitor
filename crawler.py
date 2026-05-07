@@ -410,6 +410,17 @@ def generate_report(results, config, report_dir="reports"):
     with open(filename, "w", encoding="utf-8") as f:
         f.write(html)
 
+    # サマリーJSONを reports/ に保存（index.html生成用）
+    summary = {
+        "filename": os.path.basename(filename),
+        "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+        "counts": counts,
+        "has_change": (counts["changed"] + counts["new"] + counts["error_404"]) > 0,
+    }
+    summary_path = os.path.join(report_dir, f"summary_{timestamp}.json")
+    with open(summary_path, "w", encoding="utf-8") as f:
+        json.dump(summary, f, ensure_ascii=False)
+
     log.info(f"レポート生成完了: {filename}")
     return filename
 

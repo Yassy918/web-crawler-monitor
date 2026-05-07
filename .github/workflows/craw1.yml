@@ -52,64 +52,90 @@ jobs:
             cp "$f" "docs/$(basename $f)"
           done
 
-          # 一覧ページ（index.html）を生成
-          cat <<'EOF_HEAD' > docs/index.html
-          <!DOCTYPE html>
+          # Pythonでサマリーを読み取りindex.htmlを生成
+          python3 - <<'PYEOF'
+          import json, os, glob
+
+          summaries = []
+          for path in sorted(glob.glob("reports/summary_*.json"), reverse=True):
+              with open(path, encoding="utf-8") as f:
+                  summaries.append(json.load(f))
+
+          def badge(s):
+              c = s["counts"]
+              has = s["has_change"]
+              if not has:
+                  return '<span class="badge ok">✅ 変更なし</span>'
+              parts = []
+              if c["changed"]: parts.append(f'<span class="badge changed">📝 変更 {c["changed"]}件</span>')
+              if c["new"]:     parts.append(f'<span class="badge new">🆕 新規 {c["new"]}件</span>')
+              if c["error_404"]: parts.append(f'<span class="badge error404">🚫 404 {c["error_404"]}件</span>')
+              if c["error"]:   parts.append(f'<span class="badge error">❌ エラー {c["error"]}件</span>')
+              return " ".join(parts)
+
+          def fmt_time(ts):
+              return f"{ts[0:4]}年{ts[4:6]}月{ts[6:8]}日 {ts[9:11]}:{ts[11:13]}"
+
+          rows = ""
+          for s in summaries:
+              ts   = s["timestamp"]
+              fname = s["filename"]
+              rows += f"""
+              <tr>
+                <td>{fmt_time(ts)}</td>
+                <td>{badge(s)}</td>
+                <td><a href="{fname}">レポートを開く →</a></td>
+              </tr>"""
+
+          if not rows:
+              rows = '<tr><td colspan="3" style="color:#64748b">レポートがまだありません</td></tr>'
+
+          html = f"""<!DOCTYPE html>
           <html lang="ja">
           <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1">
           <title>WebCrawler レポート一覧</title>
           <style>
-            body { font-family: "Segoe UI", sans-serif; background: #f8fafc; color: #1e293b; padding: 24px; }
-            h1 { font-size: 1.4rem; margin-bottom: 4px; }
-            .meta { color: #64748b; font-size: 0.875rem; margin-bottom: 24px; }
-            table { border-collapse: collapse; width: 100%; max-width: 800px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-            th { background: #f1f5f9; padding: 12px 16px; text-align: left; font-size: 0.8rem; color: #64748b; text-transform: uppercase; }
-            td { padding: 12px 16px; border-top: 1px solid #e2e8f0; font-size: 0.9rem; }
-            tr:hover td { background: #f8fafc; }
-            a { color: #2563eb; text-decoration: none; }
-            a:hover { text-decoration: underline; }
-            .badge-new { background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:4px; font-size:0.75rem; }
+            body {{ font-family:"Segoe UI",sans-serif; background:#f8fafc; color:#1e293b; padding:24px; }}
+            h1 {{ font-size:1.4rem; margin-bottom:4px; }}
+            .meta {{ color:#64748b; font-size:0.875rem; margin-bottom:24px; }}
+            table {{ border-collapse:collapse; width:100%; max-width:900px; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.08); }}
+            th {{ background:#f1f5f9; padding:12px 16px; text-align:left; font-size:0.8rem; color:#64748b; text-transform:uppercase; }}
+            td {{ padding:12px 16px; border-top:1px solid #e2e8f0; font-size:0.9rem; vertical-align:middle; }}
+            tr:hover td {{ background:#f8fafc; }}
+            a {{ color:#2563eb; text-decoration:none; font-weight:600; }}
+            a:hover {{ text-decoration:underline; }}
+            .badge {{ display:inline-block; padding:3px 10px; border-radius:9999px; font-size:0.78rem; font-weight:600; margin-right:4px; }}
+            .badge.ok      {{ background:#dcfce7; color:#166534; }}
+            .badge.changed {{ background:#fef9c3; color:#854d0e; }}
+            .badge.new     {{ background:#dbeafe; color:#1e40af; }}
+            .badge.error404{{ background:#ffedd5; color:#9a3412; }}
+            .badge.error   {{ background:#fee2e2; color:#991b1b; }}
           </style>
           </head>
           <body>
           <h1>🔍 WebCrawler レポート一覧</h1>
-          <p class="meta">最新のレポートが上に表示されます</p>
+          <p class="meta">最新の実行が上に表示されます（1週間分保持）</p>
           <table>
-          <thead><tr><th>実行日時</th><th>レポート</th></tr></thead>
-          <tbody>
-          EOF_HEAD
-
-          # レポートを新しい順に列挙
-          for f in $(ls -t docs/report_*.html 2>/dev/null); do
-            fname=$(basename "$f")
-            # ファイル名から日時を抽出して整形 report_YYYYMMDD_HHMMSS.html
-            raw=$(echo "$fname" | sed 's/report_//;s/\.html//')
-            date_part=$(echo "$raw" | cut -d_ -f1)
-            time_part=$(echo "$raw" | cut -d_ -f2)
-            year=${date_part:0:4}
-            month=${date_part:4:2}
-            day=${date_part:6:2}
-            hour=${time_part:0:2}
-            min=${time_part:2:2}
-            label="${year}年${month}月${day}日 ${hour}:${min}"
-            echo "    <tr><td>${label}</td><td><a href=\"${fname}\">レポートを開く</a></td></tr>" >> docs/index.html
-          done
-
-          cat <<'EOF_FOOT' >> docs/index.html
-          </tbody>
+          <thead><tr><th>実行日時</th><th>サマリー</th><th>詳細</th></tr></thead>
+          <tbody>{rows}</tbody>
           </table>
           </body>
-          </html>
-          EOF_FOOT
+          </html>"""
+
+          with open("docs/index.html", "w", encoding="utf-8") as f:
+              f.write(html)
+          print("index.html 生成完了")
+          PYEOF
 
       # 6. 1週間以上経過したレポートを削除
       - name: Cleanup old reports
         run: |
-          find reports/ -name "report_*.html" -mtime +7 -delete
-          find docs/    -name "report_*.html" -mtime +7 -delete
-          echo "7日以上前のレポートを削除しました"
+          find reports/ -name "report_*.html"   -mtime +7 -delete
+          find reports/ -name "summary_*.json"  -mtime +7 -delete
+          find docs/    -name "report_*.html"   -mtime +7 -delete
+          echo "7日以上前のレポート・サマリーを削除しました"
 
       # 7. スナップショット・レポートをリポジトリにコミット
       - name: Commit snapshots and reports
