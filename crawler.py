@@ -425,7 +425,7 @@ def generate_report(results, config, report_dir="reports"):
     return filename
 
 # ── メール送信 ────────────────────────────────────────────
-def send_mail(config, results, report_url):
+def send_mail(config, results, report_url, index_url=""):
     """
     定時実行通知メールを送信する。
     変更があった場合はレポートのURLをメール本文に記載する。
@@ -459,9 +459,14 @@ def send_mail(config, results, report_url):
         subject = f"【WebCrawler】定時巡回完了・変更なし {now_str}"
 
     # 本文（HTML）
+    # 変更あり時は該当レポートへの直リンク、常にレポート一覧URLも表示
     report_link = (
-        f'<p>📊 <a href="{report_url}">最新レポートを開く</a></p>'
+        f'<p>📊 <a href="{report_url}">今回の変更レポートを開く</a></p>'
         if has_change else ""
+    )
+    index_link = (
+        f'<p>📋 <a href="{index_url}">レポート一覧を開く</a></p>'
+        if index_url else ""
     )
 
     changed_list = ""
@@ -490,6 +495,7 @@ def send_mail(config, results, report_url):
 </table>
 <hr>
 {report_link}
+{index_link}
 {changed_list}
 <p style="color:#64748b; font-size:0.85em;">このメールはWebCrawler Monitorにより自動送信されています。</p>
 </body></html>
@@ -523,11 +529,12 @@ def main():
     log.info(f"=== 完了: {len(results)}ページ確認、{changed}件の変更を検出 ===")
 
     # GitHub Pages のレポートURL（環境変数から取得、なければローカルパス）
-    pages_url = os.environ.get("PAGES_URL", "").rstrip("/")
-    report_url = f"{pages_url}/index.html" if pages_url else os.path.abspath(report_file)
+    pages_url  = os.environ.get("PAGES_URL", "").rstrip("/")
+    index_url  = f"{pages_url}/index.html" if pages_url else ""
+    report_url = f"{pages_url}/{os.path.basename(report_file)}" if pages_url else os.path.abspath(report_file)
 
-    # メール送信（定時実行通知・変更時はレポートリンク付き）
-    send_mail(config, results, report_url)
+    # メール送信（定時実行通知・変更時はレポートリンク付き、常にレポート一覧URL）
+    send_mail(config, results, report_url, index_url)
 
     # 変更があればブラウザで自動表示（ローカル実行時のみ）
     if changed > 0 and config.get("auto_open_browser", True) and not pages_url:

@@ -52,38 +52,53 @@ jobs:
             cp "$f" "docs/$(basename $f)"
           done
 
-          # Pythonでサマリーを読み取りindex.htmlを生成
+          # Pythonでsummary_*.json + report_*.htmlを統合してindex.htmlを生成
           python3 - <<'PYEOF'
-          import json, os, glob
+          import json, os, glob, re
 
-          summaries = []
-          for path in sorted(glob.glob("reports/summary_*.json"), reverse=True):
+          # summary_*.json を読み込みfilenameをキーに辞書化
+          summary_map = {}
+          for path in glob.glob("reports/summary_*.json"):
               with open(path, encoding="utf-8") as f:
-                  summaries.append(json.load(f))
+                  s = json.load(f)
+                  summary_map[s["filename"]] = s
+
+          # docs/ にある report_*.html を全件スキャン（新しい順）
+          all_reports = sorted(glob.glob("docs/report_*.html"), reverse=True)
 
           def badge(s):
               c = s["counts"]
-              has = s["has_change"]
-              if not has:
+              if not s["has_change"]:
                   return '<span class="badge ok">✅ 変更なし</span>'
               parts = []
-              if c["changed"]: parts.append(f'<span class="badge changed">📝 変更 {c["changed"]}件</span>')
-              if c["new"]:     parts.append(f'<span class="badge new">🆕 新規 {c["new"]}件</span>')
+              if c["changed"]:   parts.append(f'<span class="badge changed">📝 変更 {c["changed"]}件</span>')
+              if c["new"]:       parts.append(f'<span class="badge new">🆕 新規 {c["new"]}件</span>')
               if c["error_404"]: parts.append(f'<span class="badge error404">🚫 404 {c["error_404"]}件</span>')
-              if c["error"]:   parts.append(f'<span class="badge error">❌ エラー {c["error"]}件</span>')
+              if c["error"]:     parts.append(f'<span class="badge error">❌ エラー {c["error"]}件</span>')
               return " ".join(parts)
 
           def fmt_time(ts):
+              # ts = "YYYYMMDD_HHMMSS"
               return f"{ts[0:4]}年{ts[4:6]}月{ts[6:8]}日 {ts[9:11]}:{ts[11:13]}"
 
           rows = ""
-          for s in summaries:
-              ts   = s["timestamp"]
-              fname = s["filename"]
+          for fpath in all_reports:
+              fname = os.path.basename(fpath)
+              # ファイル名から timestamp を抽出: report_YYYYMMDD_HHMMSS.html
+              m = re.search(r"report_(\d{8}_\d{6})\.html", fname)
+              ts = m.group(1) if m else "000000_000000"
+
+              if fname in summary_map:
+                  # サマリーあり → バッジ表示
+                  badge_html = badge(summary_map[fname])
+              else:
+                  # サマリーなし（過去分）→ "-" で表示
+                  badge_html = '<span style="color:#94a3b8">-</span>'
+
               rows += f"""
               <tr>
                 <td>{fmt_time(ts)}</td>
-                <td>{badge(s)}</td>
+                <td>{badge_html}</td>
                 <td><a href="{fname}">レポートを開く →</a></td>
               </tr>"""
 
