@@ -79,7 +79,7 @@ jobs:
 
           def fmt_time(ts):
               # ts = "YYYYMMDD_HHMMSS"
-              return f"{ts[0:4]}年{ts[4:6]}月{ts[6:8]}日 {ts[9:11]}:{ts[11:13]}"
+              return f"{ts[0:4]}年{ts[4:6]}月{ts[6:8]}日 {ts[9:11]}:{ts[11:13]}(JST)"
 
           rows = ""
           for fpath in all_reports:

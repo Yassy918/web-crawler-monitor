@@ -15,8 +15,11 @@ import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from urllib.parse import urljoin, urlparse
+
+# 日本標準時
+JST = timezone(timedelta(hours=9))
 
 import requests
 from bs4 import BeautifulSoup
@@ -383,7 +386,8 @@ REPORT_TEMPLATE = """
 
 def generate_report(results, config, report_dir="reports"):
     os.makedirs(report_dir, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    now_jst = datetime.now(JST)
+    timestamp = now_jst.strftime("%Y%m%d_%H%M%S")
     filename = os.path.join(report_dir, f"report_{timestamp}.html")
 
     changed_pages  = [r for r in results if r["status"] in ("changed", "new", "error")]
@@ -399,7 +403,7 @@ def generate_report(results, config, report_dir="reports"):
     }
 
     html = Template(REPORT_TEMPLATE).render(
-        timestamp=datetime.now().strftime("%Y年%m月%d日 %H:%M:%S"),
+        timestamp=now_jst.strftime("%Y年%m月%d日 %H:%M:%S(JST)"),
         start_url=config["start_url"],
         changed_pages=changed_pages,
         unchanged_pages=unchanged_pages,
@@ -413,7 +417,8 @@ def generate_report(results, config, report_dir="reports"):
     # サマリーJSONを reports/ に保存（index.html生成用）
     summary = {
         "filename": os.path.basename(filename),
-        "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+        # "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S"),
+        "timestamp": timestamp,
         "counts": counts,
         "has_change": (counts["changed"] + counts["new"] + counts["error_404"]) > 0,
     }
@@ -448,7 +453,7 @@ def send_mail(config, results, report_url, index_url=""):
     new_page = sum(1 for r in results if r["status"] == "new")
     err_404  = sum(1 for r in results if r["status"] == "error_404")
     total    = len(results)
-    now_str  = datetime.now().strftime("%Y年%m月%d日 %H:%M")
+    now_str  = datetime.now(JST).strftime("%Y年%m月%d日 %H:%M")
 
     has_change = (changed + new_page + err_404) > 0
 
