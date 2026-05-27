@@ -144,13 +144,13 @@ jobs:
           print("index.html 生成完了")
           PYEOF
 
-      # 6. 1週間以上経過したレポートを削除
+      # 6. 30日間以上経過したレポートを削除
       - name: Cleanup old reports
         run: |
-          find reports/ -name "report_*.html"   -mtime +7 -delete
-          find reports/ -name "summary_*.json"  -mtime +7 -delete
-          find docs/    -name "report_*.html"   -mtime +7 -delete
-          echo "7日以上前のレポート・サマリーを削除しました"
+          find reports/ -name "report_*.html"   -mtime +30 -delete
+          find reports/ -name "summary_*.json"  -mtime +30 -delete
+          find docs/    -name "report_*.html"   -mtime +30 -delete
+          echo "30日以上前のレポート・サマリーを削除しました"
 
       # 7. スナップショット・レポートをリポジトリにコミット
       - name: Commit snapshots and reports
