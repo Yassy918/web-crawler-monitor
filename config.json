@@ -13,7 +13,8 @@
     "/logout",
     "/cart",
     "\\?.*page=",
-    "https://harada\\-sake\\.jp/niki\\ hills\\.htm"
+    "https://harada\\-sake\\.jp/niki\\ hills\\.htm",
+    "https://harada\\-sake\\.jp/ymw\\.html"
   ],
   "headers": {
     "User-Agent": "Mozilla/5.0 (compatible; WebCrawler-Monitor/1.0)"
