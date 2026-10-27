@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% from "macros.html" import badge, icon %}
+{#
+  build_index.py から渡される変数:
+    rows: [{file, date, time, status, badges: [{kind, label}]}]
+  status は絞り込み用の種別をスペース区切りにしたもの（例: "changed new"）
+#}
+{% set filters = [
+  ('changed', '変更', true),
+  ('new', '新規', true),
+  ('error404', '404', true),
+  ('error', 'エラー', true),
+  ('ok', '変更なし', false),
+  ('unknown', '不明', true)
+] %}
+
+{% block title %}WebCrawler レポート一覧{% endblock %}
+
+{% block page_css %}
+.filter { display: flex; flex-direction: column; gap: 10px; }
+.filter-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+.filter-title { margin: 0; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; }
+.count { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 8px;
+  background: transparent; border: 1.5px solid var(--chip-off-line); color: var(--ink2);
+  font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.chip .box { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid var(--chip-box); display: flex; align-items: center; justify-content: center; }
+.chip .box svg { display: none; }
+.chip[aria-pressed="true"] { background: var(--chip-on); border-color: var(--accent); color: var(--chip-on-ink); font-weight: 700; }
+.chip[aria-pressed="true"] .box { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.chip[aria-pressed="true"] .box svg { display: block; }
+.list { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; gap: 1px; background: var(--line); }
+.row { display: flex; align-items: center; gap: 16px; padding: 12px 16px; min-height: 60px; background: var(--surface); color: var(--ink); }
+.row[hidden] { display: none; }
+.row:hover { background: var(--sunken); }
+.when { flex: 0 0 96px; display: flex; flex-direction: column; font-family: var(--mono); font-variant-numeric: tabular-nums; line-height: 1.45; }
+.when .d { font-size: 14px; font-weight: 500; }
+.when .t { font-size: 13px; color: var(--muted); }
+.when .t small { margin-left: 5px; font-size: 11px; }
+.badges { flex: 1 1 0; min-width: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.chev { flex: 0 0 auto; color: var(--icon); }
+.empty { margin: 0; padding: 16px; color: var(--muted); font-size: 14px; }
+.list > .empty { background: var(--surface); }
+{% endblock %}
+
+{% block content %}
+<header>
+  <h1>レポート一覧</h1>
+  <p class="sub">最新の実行が上に表示されます（30日分保持）</p>
+</header>
+
+<section class="filter" aria-label="表示する状態の絞り込み">
+  <div class="filter-head">
+    <h2 class="filter-title">表示する状態</h2>
+    <span class="count" id="count" aria-live="polite"></span>
+  </div>
+  <div class="chips">
+    {% for key, label, on in filters %}
+    <button type="button" class="chip" data-filter="{{ key }}" aria-pressed="{{ 'true' if on else 'false' }}"><span class="box"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span>{{ label }}</button>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="list" id="report-list" aria-label="実行履歴">
+  {% for r in rows %}
+  <a class="row" href="{{ r.file }}" data-status="{{ r.status }}" aria-label="{{ r.date }} {{ r.time }} JST のレポートを開く">
+    <div class="when"><span class="d">{{ r.date }}</span><span class="t">{{ r.time }}<small>JST</small></span></div>
+    <div class="badges">{% for b in r.badges %}{{ badge(b.kind, b.label) }}{% endfor %}</div>
+    <svg class="chev" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>
+  </a>
+  {% else %}
+  <p class="empty">レポートがまだありません</p>
+  {% endfor %}
+</section>
+<p class="empty" id="no-result" hidden>条件に一致するレポートがありません</p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var chips = document.querySelectorAll('.chip');
+  var rows = document.querySelectorAll('#report-list .row');
+  var countEl = document.getElementById('count');
+  var noResult = document.getElementById('no-result');
+
+  function apply() {
+    var active = {};
+    chips.forEach(function (c) {
+      if (c.getAttribute('aria-pressed') === 'true') active[c.dataset.filter] = true;
+    });
+    var visible = 0;
+    rows.forEach(function (r) {
+      var show = r.dataset.status.split(' ').some(function (s) { return active[s]; });
+      r.hidden = !show;
+      if (show) visible++;
+    });
+    countEl.textContent = visible + ' 件表示中 / 全' + rows.length + '件';
+    noResult.hidden = visible !== 0 || rows.length === 0;
+  }
+
+  chips.forEach(function (c) {
+    c.addEventListener('click', function () {
+      c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+      apply();
+    });
+  });
+  apply();
+})();
+</script>
+{% endblock %}
